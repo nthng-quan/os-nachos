@@ -18,20 +18,21 @@
 //	"numItems" is the number of bits in the bitmap.
 //----------------------------------------------------------------------
 
-Bitmap::Bitmap(int numItems) {
-    int i;
+Bitmap::Bitmap(int numItems)
+{
+	int i;
 
-    ASSERT(numItems > 0);
+	ASSERT(numItems > 0);
 
-    numBits = numItems;
-    numWords = divRoundUp(numBits, BitsInWord);
-    map = new unsigned int[numWords];
-    for (i = 0; i < numWords; i++) {
-        map[i] = 0; // initialize map to keep Purify happy
-    }
-    for (i = 0; i < numBits; i++) {
-        Clear(i);
-    }
+	numBits = numItems;
+	numWords = divRoundUp(numBits, BitsInWord);
+	map = new unsigned int[numWords];
+	for (i = 0; i < numWords; i++) {
+		map[i] = 0; // initialize map to keep Purify happy
+	}
+	for (i = 0; i < numBits; i++) {
+		Clear(i);
+	}
 }
 
 //----------------------------------------------------------------------
@@ -39,7 +40,10 @@ Bitmap::Bitmap(int numItems) {
 // 	De-allocate a bitmap.
 //----------------------------------------------------------------------
 
-Bitmap::~Bitmap() { delete map; }
+Bitmap::~Bitmap()
+{
+	delete map;
+}
 
 //----------------------------------------------------------------------
 // Bitmap::Set
@@ -48,12 +52,13 @@ Bitmap::~Bitmap() { delete map; }
 //	"which" is the number of the bit to be set.
 //----------------------------------------------------------------------
 
-void Bitmap::Mark(int which) {
-    ASSERT(which >= 0 && which < numBits);
+void Bitmap::Mark(int which)
+{
+	ASSERT(which >= 0 && which < numBits);
 
-    map[which / BitsInWord] |= 1 << (which % BitsInWord);
+	map[which / BitsInWord] |= 1 << (which % BitsInWord);
 
-    ASSERT(Test(which));
+	ASSERT(Test(which));
 }
 
 //----------------------------------------------------------------------
@@ -63,12 +68,13 @@ void Bitmap::Mark(int which) {
 //	"which" is the number of the bit to be cleared.
 //----------------------------------------------------------------------
 
-void Bitmap::Clear(int which) {
-    ASSERT(which >= 0 && which < numBits);
+void Bitmap::Clear(int which)
+{
+	ASSERT(which >= 0 && which < numBits);
 
-    map[which / BitsInWord] &= ~(1 << (which % BitsInWord));
+	map[which / BitsInWord] &= ~(1 << (which % BitsInWord));
 
-    ASSERT(!Test(which));
+	ASSERT(!Test(which));
 }
 
 //----------------------------------------------------------------------
@@ -78,14 +84,15 @@ void Bitmap::Clear(int which) {
 //	"which" is the number of the bit to be tested.
 //----------------------------------------------------------------------
 
-bool Bitmap::Test(int which) const {
-    ASSERT(which >= 0 && which < numBits);
+bool Bitmap::Test(int which) const
+{
+	ASSERT(which >= 0 && which < numBits);
 
-    if (map[which / BitsInWord] & (1 << (which % BitsInWord))) {
-        return TRUE;
-    } else {
-        return FALSE;
-    }
+	if (map[which / BitsInWord] & (1 << (which % BitsInWord))) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
 }
 
 //----------------------------------------------------------------------
@@ -97,14 +104,15 @@ bool Bitmap::Test(int which) const {
 //	If no bits are clear, return -1.
 //----------------------------------------------------------------------
 
-int Bitmap::FindAndSet() {
-    for (int i = 0; i < numBits; i++) {
-        if (!Test(i)) {
-            Mark(i);
-            return i;
-        }
-    }
-    return -1;
+int Bitmap::FindAndSet()
+{
+	for (int i = 0; i < numBits; i++) {
+		if (!Test(i)) {
+			Mark(i);
+			return i;
+		}
+	}
+	return -1;
 }
 
 //----------------------------------------------------------------------
@@ -113,15 +121,16 @@ int Bitmap::FindAndSet() {
 //	(In other words, how many bits are unallocated?)
 //----------------------------------------------------------------------
 
-int Bitmap::NumClear() const {
-    int count = 0;
+int Bitmap::NumClear() const
+{
+	int count = 0;
 
-    for (int i = 0; i < numBits; i++) {
-        if (!Test(i)) {
-            count++;
-        }
-    }
-    return count;
+	for (int i = 0; i < numBits; i++) {
+		if (!Test(i)) {
+			count++;
+		}
+	}
+	return count;
 }
 
 //----------------------------------------------------------------------
@@ -132,14 +141,15 @@ int Bitmap::NumClear() const {
 //	all the bits that are set in the bitmap.
 //----------------------------------------------------------------------
 
-void Bitmap::Print() const {
-    cout << "Bitmap set:\n";
-    for (int i = 0; i < numBits; i++) {
-        if (Test(i)) {
-            cout << i << ", ";
-        }
-    }
-    cout << "\n";
+void Bitmap::Print() const
+{
+	cout << "Bitmap set:\n";
+	for (int i = 0; i < numBits; i++) {
+		if (Test(i)) {
+			cout << i << ", ";
+		}
+	}
+	cout << "\n";
 }
 
 //----------------------------------------------------------------------
@@ -147,26 +157,27 @@ void Bitmap::Print() const {
 // 	Test whether this module is working.
 //----------------------------------------------------------------------
 
-void Bitmap::SelfTest() {
-    int i;
+void Bitmap::SelfTest()
+{
+	int i;
 
-    ASSERT(numBits >= BitsInWord); // bitmap must be big enough
+	ASSERT(numBits >= BitsInWord); // bitmap must be big enough
 
-    ASSERT(NumClear() == numBits); // bitmap must be empty
-    ASSERT(FindAndSet() == 0);
-    Mark(31);
-    ASSERT(Test(0) && Test(31));
+	ASSERT(NumClear() == numBits); // bitmap must be empty
+	ASSERT(FindAndSet() == 0);
+	Mark(31);
+	ASSERT(Test(0) && Test(31));
 
-    ASSERT(FindAndSet() == 1);
-    Clear(0);
-    Clear(1);
-    Clear(31);
+	ASSERT(FindAndSet() == 1);
+	Clear(0);
+	Clear(1);
+	Clear(31);
 
-    for (i = 0; i < numBits; i++) {
-        Mark(i);
-    }
-    ASSERT(FindAndSet() == -1); // bitmap should be full!
-    for (i = 0; i < numBits; i++) {
-        Clear(i);
-    }
+	for (i = 0; i < numBits; i++) {
+		Mark(i);
+	}
+	ASSERT(FindAndSet() == -1); // bitmap should be full!
+	for (i = 0; i < numBits; i++) {
+		Clear(i);
+	}
 }

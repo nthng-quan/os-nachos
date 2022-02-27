@@ -44,10 +44,11 @@
 //	"initialValue" is the initial value of the semaphore.
 //----------------------------------------------------------------------
 
-Semaphore::Semaphore(char *debugName, int initialValue) {
-    name = debugName;
-    value = initialValue;
-    queue = new List<Thread *>;
+Semaphore::Semaphore(char *debugName, int initialValue)
+{
+	name = debugName;
+	value = initialValue;
+	queue = new List<Thread *>;
 }
 
 //----------------------------------------------------------------------
@@ -56,7 +57,10 @@ Semaphore::Semaphore(char *debugName, int initialValue) {
 //	is still waiting on the semaphore!
 //----------------------------------------------------------------------
 
-Semaphore::~Semaphore() { delete queue; }
+Semaphore::~Semaphore()
+{
+	delete queue;
+}
 
 //----------------------------------------------------------------------
 // Semaphore::P
@@ -68,21 +72,22 @@ Semaphore::~Semaphore() { delete queue; }
 //	when it is called.
 //----------------------------------------------------------------------
 
-void Semaphore::P() {
-    Interrupt *interrupt = kernel->interrupt;
-    Thread *currentThread = kernel->currentThread;
+void Semaphore::P()
+{
+	Interrupt *interrupt = kernel->interrupt;
+	Thread *currentThread = kernel->currentThread;
 
-    // disable interrupts
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+	// disable interrupts
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-    while (value == 0) {              // semaphore not available
-        queue->Append(currentThread); // so go to sleep
-        currentThread->Sleep(FALSE);
-    }
-    value--; // semaphore available, consume its value
+	while (value == 0) { // semaphore not available
+		queue->Append(currentThread); // so go to sleep
+		currentThread->Sleep(FALSE);
+	}
+	value--; // semaphore available, consume its value
 
-    // re-enable interrupts
-    (void)interrupt->SetLevel(oldLevel);
+	// re-enable interrupts
+	(void)interrupt->SetLevel(oldLevel);
 }
 
 //----------------------------------------------------------------------
@@ -93,19 +98,20 @@ void Semaphore::P() {
 //	are disabled when it is called.
 //----------------------------------------------------------------------
 
-void Semaphore::V() {
-    Interrupt *interrupt = kernel->interrupt;
+void Semaphore::V()
+{
+	Interrupt *interrupt = kernel->interrupt;
 
-    // disable interrupts
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+	// disable interrupts
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-    if (!queue->IsEmpty()) { // make thread ready.
-        kernel->scheduler->ReadyToRun(queue->RemoveFront());
-    }
-    value++;
+	if (!queue->IsEmpty()) { // make thread ready.
+		kernel->scheduler->ReadyToRun(queue->RemoveFront());
+	}
+	value++;
 
-    // re-enable interrupts
-    (void)interrupt->SetLevel(oldLevel);
+	// re-enable interrupts
+	(void)interrupt->SetLevel(oldLevel);
 }
 
 //----------------------------------------------------------------------
@@ -115,24 +121,26 @@ void Semaphore::V() {
 //----------------------------------------------------------------------
 
 static Semaphore *ping;
-static void SelfTestHelper(Semaphore *pong) {
-    for (int i = 0; i < 10; i++) {
-        ping->P();
-        pong->V();
-    }
+static void SelfTestHelper(Semaphore *pong)
+{
+	for (int i = 0; i < 10; i++) {
+		ping->P();
+		pong->V();
+	}
 }
 
-void Semaphore::SelfTest() {
-    Thread *helper = new Thread("ping");
+void Semaphore::SelfTest()
+{
+	Thread *helper = new Thread("ping");
 
-    ASSERT(value == 0); // otherwise test won't work!
-    ping = new Semaphore("ping", 0);
-    helper->Fork((VoidFunctionPtr)SelfTestHelper, this);
-    for (int i = 0; i < 10; i++) {
-        ping->V();
-        this->P();
-    }
-    delete ping;
+	ASSERT(value == 0); // otherwise test won't work!
+	ping = new Semaphore("ping", 0);
+	helper->Fork((VoidFunctionPtr)SelfTestHelper, this);
+	for (int i = 0; i < 10; i++) {
+		ping->V();
+		this->P();
+	}
+	delete ping;
 }
 
 //----------------------------------------------------------------------
@@ -143,17 +151,21 @@ void Semaphore::SelfTest() {
 //	"debugName" is an arbitrary name, useful for debugging.
 //----------------------------------------------------------------------
 
-Lock::Lock(char *debugName) {
-    name = debugName;
-    semaphore = new Semaphore("lock", 1); // initially, unlocked
-    lockHolder = NULL;
+Lock::Lock(char *debugName)
+{
+	name = debugName;
+	semaphore = new Semaphore("lock", 1); // initially, unlocked
+	lockHolder = NULL;
 }
 
 //----------------------------------------------------------------------
 // Lock::~Lock
 // 	Deallocate a lock
 //----------------------------------------------------------------------
-Lock::~Lock() { delete semaphore; }
+Lock::~Lock()
+{
+	delete semaphore;
+}
 
 //----------------------------------------------------------------------
 // Lock::Acquire
@@ -162,9 +174,10 @@ Lock::~Lock() { delete semaphore; }
 //	equal to busy, and semaphore value of 1 equal to free.
 //----------------------------------------------------------------------
 
-void Lock::Acquire() {
-    semaphore->P();
-    lockHolder = kernel->currentThread;
+void Lock::Acquire()
+{
+	semaphore->P();
+	lockHolder = kernel->currentThread;
 }
 
 //----------------------------------------------------------------------
@@ -178,10 +191,11 @@ void Lock::Acquire() {
 // 	may release it.
 //---------------------------------------------------------------------
 
-void Lock::Release() {
-    ASSERT(IsHeldByCurrentThread());
-    lockHolder = NULL;
-    semaphore->V();
+void Lock::Release()
+{
+	ASSERT(IsHeldByCurrentThread());
+	lockHolder = NULL;
+	semaphore->V();
 }
 
 //----------------------------------------------------------------------
@@ -192,9 +206,10 @@ void Lock::Release() {
 //
 //	"debugName" is an arbitrary name, useful for debugging.
 //----------------------------------------------------------------------
-Condition::Condition(char *debugName) {
-    name = debugName;
-    waitQueue = new List<Semaphore *>;
+Condition::Condition(char *debugName)
+{
+	name = debugName;
+	waitQueue = new List<Semaphore *>;
 }
 
 //----------------------------------------------------------------------
@@ -202,7 +217,10 @@ Condition::Condition(char *debugName) {
 // 	Deallocate the data structures implementing a condition variable.
 //----------------------------------------------------------------------
 
-Condition::~Condition() { delete waitQueue; }
+Condition::~Condition()
+{
+	delete waitQueue;
+}
 
 //----------------------------------------------------------------------
 // Condition::Wait
@@ -219,17 +237,18 @@ Condition::~Condition() { delete waitQueue; }
 //	"conditionLock" -- lock protecting the use of this condition
 //----------------------------------------------------------------------
 
-void Condition::Wait(Lock *conditionLock) {
-    Semaphore *waiter;
+void Condition::Wait(Lock *conditionLock)
+{
+	Semaphore *waiter;
 
-    ASSERT(conditionLock->IsHeldByCurrentThread());
+	ASSERT(conditionLock->IsHeldByCurrentThread());
 
-    waiter = new Semaphore("condition", 0);
-    waitQueue->Append(waiter);
-    conditionLock->Release();
-    waiter->P();
-    conditionLock->Acquire();
-    delete waiter;
+	waiter = new Semaphore("condition", 0);
+	waitQueue->Append(waiter);
+	conditionLock->Release();
+	waiter->P();
+	conditionLock->Acquire();
+	delete waiter;
 }
 
 //----------------------------------------------------------------------
@@ -247,15 +266,16 @@ void Condition::Wait(Lock *conditionLock) {
 //	"conditionLock" -- lock protecting the use of this condition
 //----------------------------------------------------------------------
 
-void Condition::Signal(Lock *conditionLock) {
-    Semaphore *waiter;
+void Condition::Signal(Lock *conditionLock)
+{
+	Semaphore *waiter;
 
-    ASSERT(conditionLock->IsHeldByCurrentThread());
+	ASSERT(conditionLock->IsHeldByCurrentThread());
 
-    if (!waitQueue->IsEmpty()) {
-        waiter = waitQueue->RemoveFront();
-        waiter->V();
-    }
+	if (!waitQueue->IsEmpty()) {
+		waiter = waitQueue->RemoveFront();
+		waiter->V();
+	}
 }
 
 //----------------------------------------------------------------------
@@ -265,8 +285,9 @@ void Condition::Signal(Lock *conditionLock) {
 //	"conditionLock" -- lock protecting the use of this condition
 //----------------------------------------------------------------------
 
-void Condition::Broadcast(Lock *conditionLock) {
-    while (!waitQueue->IsEmpty()) {
-        Signal(conditionLock);
-    }
+void Condition::Broadcast(Lock *conditionLock)
+{
+	while (!waitQueue->IsEmpty()) {
+		Signal(conditionLock);
+	}
 }

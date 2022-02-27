@@ -22,18 +22,22 @@
 //		to be enabled.
 //----------------------------------------------------------------------
 
-Debug::Debug(char *flagList) { enableFlags = flagList; }
+Debug::Debug(char *flagList)
+{
+	enableFlags = flagList;
+}
 
 //----------------------------------------------------------------------
 // Debug::IsEnabled
 //      Return TRUE if DEBUG messages with "flag" are to be printed.
 //----------------------------------------------------------------------
 
-bool Debug::IsEnabled(char flag) {
-    if (enableFlags != NULL) {
-        return ((strchr(enableFlags, flag) != 0) ||
-                (strchr(enableFlags, '+') != 0));
-    } else {
-        return FALSE;
-    }
+bool Debug::IsEnabled(char flag)
+{
+	if (enableFlags != NULL) {
+		return ((strchr(enableFlags, flag) != 0) ||
+			(strchr(enableFlags, '+') != 0));
+	} else {
+		return FALSE;
+	}
 }

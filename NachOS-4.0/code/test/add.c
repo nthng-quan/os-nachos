@@ -6,13 +6,14 @@
 
 #include "syscall.h"
 
-int main() {
-    int result;
+int main()
+{
+	int result;
 
-    result = Add(42, 23);
-    PrintNum(result);
-    PrintChar('\n');
+	result = Add(42, 23);
+	PrintNum(result);
+	PrintChar('\n');
 
-    Halt();
-    /* not reached */
+	Halt();
+	/* not reached */
 }

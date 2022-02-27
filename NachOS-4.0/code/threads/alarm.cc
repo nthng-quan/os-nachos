@@ -20,7 +20,10 @@
 //		occur at random, instead of fixed, intervals.
 //----------------------------------------------------------------------
 
-Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); }
+Alarm::Alarm(bool doRandom)
+{
+	timer = new Timer(doRandom, this);
+}
 
 //----------------------------------------------------------------------
 // Alarm::CallBack
@@ -40,11 +43,12 @@ Alarm::Alarm(bool doRandom) { timer = new Timer(doRandom, this); }
 //      if we're currently running something (in other words, not idle).
 //----------------------------------------------------------------------
 
-void Alarm::CallBack() {
-    Interrupt *interrupt = kernel->interrupt;
-    MachineStatus status = interrupt->getStatus();
+void Alarm::CallBack()
+{
+	Interrupt *interrupt = kernel->interrupt;
+	MachineStatus status = interrupt->getStatus();
 
-    if (status != IdleMode) {
-        interrupt->YieldOnReturn();
-    }
+	if (status != IdleMode) {
+		interrupt->YieldOnReturn();
+	}
 }

@@ -5,16 +5,17 @@
  */
 #include "syscall.h"
 char string[256];
-int main() {
-    int convert_length;
-    PrintString("- Desired string length to read: (<= 255):\n");
-    convert_length = ReadNum();
-    PrintString("- Insert string:\n");
-    ReadString(string, convert_length);
+int main()
+{
+	int convert_length;
+	PrintString("- Desired string length to read: (<= 255):\n");
+	convert_length = ReadNum();
+	PrintString("- Insert string:\n");
+	ReadString(string, convert_length);
 
-    PrintString("-> ");
-    PrintString(string);
-    PrintChar('\n');
+	PrintString("-> ");
+	PrintString(string);
+	PrintChar('\n');
 
-    Halt();
+	Halt();
 }

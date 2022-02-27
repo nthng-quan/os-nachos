@@ -21,35 +21,35 @@
 // a console device
 
 class SynchConsoleInput : public CallBackObj {
-  public:
-    SynchConsoleInput(char *inputFile); // Initialize the console device
-    ~SynchConsoleInput();               // Deallocate console device
+    public:
+	SynchConsoleInput(char *inputFile); // Initialize the console device
+	~SynchConsoleInput(); // Deallocate console device
 
-    char GetChar(); // Read a character, waiting if necessary
-    int GetString(char *buffer, int size); // Read characters into buffer
+	char GetChar(); // Read a character, waiting if necessary
+	int GetString(char *buffer, int size); // Read characters into buffer
 
-  private:
-    ConsoleInput *consoleInput; // the hardware keyboard
-    Lock *lock;                 // only one reader at a time
-    Semaphore *waitFor;         // wait for callBack
+    private:
+	ConsoleInput *consoleInput; // the hardware keyboard
+	Lock *lock; // only one reader at a time
+	Semaphore *waitFor; // wait for callBack
 
-    void CallBack(); // called when a keystroke is available
+	void CallBack(); // called when a keystroke is available
 };
 
 class SynchConsoleOutput : public CallBackObj {
-  public:
-    SynchConsoleOutput(char *outputFile); // Initialize the console device
-    ~SynchConsoleOutput();
+    public:
+	SynchConsoleOutput(char *outputFile); // Initialize the console device
+	~SynchConsoleOutput();
 
-    void PutChar(char ch); // Write a character, waiting if necessary
-    int PutString(char *buffer, int size); // Write characters from buffer
+	void PutChar(char ch); // Write a character, waiting if necessary
+	int PutString(char *buffer, int size); // Write characters from buffer
 
-  private:
-    ConsoleOutput *consoleOutput; // the hardware display
-    Lock *lock;                   // only one writer at a time
-    Semaphore *waitFor;           // wait for callBack
+    private:
+	ConsoleOutput *consoleOutput; // the hardware display
+	Lock *lock; // only one writer at a time
+	Semaphore *waitFor; // wait for callBack
 
-    void CallBack(); // called when more data can be written
+	void CallBack(); // called when more data can be written
 };
 
 #endif // SYNCHCONSOLE_H

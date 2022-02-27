@@ -200,20 +200,20 @@
 #define FP29 216
 #define FP30 224
 #define FP31 232
-#define CR 240  // control register
-#define LR 244  // link register
+#define CR 240 // control register
+#define LR 244 // link register
 #define TOC 248 // Table Of Contents
 
 // for ThreadRoot assembly function
 
-#define InitialPCState 0  //  (P1/4 - 1)  // user function address
+#define InitialPCState 0 //  (P1/4 - 1)  // user function address
 #define InitialArgState 1 //  (P2/4 - 1)  // user function argument
 #define WhenDonePCState 2 //  (P3/4 - 1)  // clean up function addr
-#define StartupPCState 3  //  (P4/4 - 1)  // start up function addr
+#define StartupPCState 3 //  (P4/4 - 1)  // start up function addr
 #define PCState                                                                \
-    60 //  (LR/4 - 1)  // ThreadRoot addr (first time).
-       // Later PC addr when SWITCH
-       // occured
+	60 //  (LR/4 - 1)  // ThreadRoot addr (first time).                    \
+		// Later PC addr when SWITCH                                   \
+		// occured
 
 #define InitialLR 21
 #define InitialArg 22

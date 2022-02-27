@@ -17,10 +17,11 @@
 //              otherwise, read from this file
 //----------------------------------------------------------------------
 
-SynchConsoleInput::SynchConsoleInput(char *inputFile) {
-    consoleInput = new ConsoleInput(inputFile, this);
-    lock = new Lock("console in");
-    waitFor = new Semaphore("console in", 0);
+SynchConsoleInput::SynchConsoleInput(char *inputFile)
+{
+	consoleInput = new ConsoleInput(inputFile, this);
+	lock = new Lock("console in");
+	waitFor = new Semaphore("console in", 0);
 }
 
 //----------------------------------------------------------------------
@@ -28,10 +29,11 @@ SynchConsoleInput::SynchConsoleInput(char *inputFile) {
 //      Deallocate data structures for synchronized access to the keyboard
 //----------------------------------------------------------------------
 
-SynchConsoleInput::~SynchConsoleInput() {
-    delete consoleInput;
-    delete lock;
-    delete waitFor;
+SynchConsoleInput::~SynchConsoleInput()
+{
+	delete consoleInput;
+	delete lock;
+	delete waitFor;
 }
 
 //----------------------------------------------------------------------
@@ -39,14 +41,15 @@ SynchConsoleInput::~SynchConsoleInput() {
 //      Read a character typed at the keyboard, waiting if necessary.
 //----------------------------------------------------------------------
 
-char SynchConsoleInput::GetChar() {
-    char ch;
+char SynchConsoleInput::GetChar()
+{
+	char ch;
 
-    lock->Acquire();
-    waitFor->P(); // wait for EOF or a char to be available.
-    ch = consoleInput->GetChar();
-    lock->Release();
-    return ch;
+	lock->Acquire();
+	waitFor->P(); // wait for EOF or a char to be available.
+	ch = consoleInput->GetChar();
+	lock->Release();
+	return ch;
 }
 
 //----------------------------------------------------------------------
@@ -55,7 +58,10 @@ char SynchConsoleInput::GetChar() {
 //	anyone waiting.
 //----------------------------------------------------------------------
 
-void SynchConsoleInput::CallBack() { waitFor->V(); }
+void SynchConsoleInput::CallBack()
+{
+	waitFor->V();
+}
 
 //----------------------------------------------------------------------
 // SynchConsoleOutput::SynchConsoleOutput
@@ -65,10 +71,11 @@ void SynchConsoleInput::CallBack() { waitFor->V(); }
 //              otherwise, read from this file
 //----------------------------------------------------------------------
 
-SynchConsoleOutput::SynchConsoleOutput(char *outputFile) {
-    consoleOutput = new ConsoleOutput(outputFile, this);
-    lock = new Lock("console out");
-    waitFor = new Semaphore("console out", 0);
+SynchConsoleOutput::SynchConsoleOutput(char *outputFile)
+{
+	consoleOutput = new ConsoleOutput(outputFile, this);
+	lock = new Lock("console out");
+	waitFor = new Semaphore("console out", 0);
 }
 
 //----------------------------------------------------------------------
@@ -76,10 +83,11 @@ SynchConsoleOutput::SynchConsoleOutput(char *outputFile) {
 //      Deallocate data structures for synchronized access to the keyboard
 //----------------------------------------------------------------------
 
-SynchConsoleOutput::~SynchConsoleOutput() {
-    delete consoleOutput;
-    delete lock;
-    delete waitFor;
+SynchConsoleOutput::~SynchConsoleOutput()
+{
+	delete consoleOutput;
+	delete lock;
+	delete waitFor;
 }
 
 //----------------------------------------------------------------------
@@ -87,11 +95,12 @@ SynchConsoleOutput::~SynchConsoleOutput() {
 //      Write a character to the console display, waiting if necessary.
 //----------------------------------------------------------------------
 
-void SynchConsoleOutput::PutChar(char ch) {
-    lock->Acquire();
-    consoleOutput->PutChar(ch);
-    waitFor->P();
-    lock->Release();
+void SynchConsoleOutput::PutChar(char ch)
+{
+	lock->Acquire();
+	consoleOutput->PutChar(ch);
+	waitFor->P();
+	lock->Release();
 }
 
 //----------------------------------------------------------------------
@@ -100,22 +109,26 @@ void SynchConsoleOutput::PutChar(char ch) {
 //	character can be sent to the display.
 //----------------------------------------------------------------------
 
-void SynchConsoleOutput::CallBack() { waitFor->V(); }
+void SynchConsoleOutput::CallBack()
+{
+	waitFor->V();
+}
 
 //----------------------------------------------------------------------
 // SynchConsoleInput::GetString
 //      Read a string from keyboard to buffer, return number of read characters.
 //----------------------------------------------------------------------
 
-int SynchConsoleInput::GetString(char *buffer, int size) {
-    for (int i = 0; i < size; ++i) {
-        buffer[i] = GetChar();
-        if (buffer[i] == EOF) {
-            buffer[i] = 0;
-            return -2;
-        }
-    }
-    return size;
+int SynchConsoleInput::GetString(char *buffer, int size)
+{
+	for (int i = 0; i < size; ++i) {
+		buffer[i] = GetChar();
+		if (buffer[i] == EOF) {
+			buffer[i] = 0;
+			return -2;
+		}
+	}
+	return size;
 }
 
 //----------------------------------------------------------------------
@@ -124,8 +137,9 @@ int SynchConsoleInput::GetString(char *buffer, int size) {
 //      charaters.
 //----------------------------------------------------------------------
 
-int SynchConsoleOutput::PutString(char *buffer, int size) {
-    for (int i = 0; i < size; ++i)
-        PutChar(buffer[i]);
-    return size;
+int SynchConsoleOutput::PutString(char *buffer, int size)
+{
+	for (int i = 0; i < size; ++i)
+		PutChar(buffer[i]);
+	return size;
 }

@@ -35,11 +35,12 @@
 //      "toCall" is the interrupt handler to call when the timer expires.
 //----------------------------------------------------------------------
 
-Timer::Timer(bool doRandom, CallBackObj *toCall) {
-    randomize = doRandom;
-    callPeriodically = toCall;
-    disable = FALSE;
-    SetInterrupt();
+Timer::Timer(bool doRandom, CallBackObj *toCall)
+{
+	randomize = doRandom;
+	callPeriodically = toCall;
+	disable = FALSE;
+	SetInterrupt();
 }
 
 //----------------------------------------------------------------------
@@ -48,12 +49,13 @@ Timer::Timer(bool doRandom, CallBackObj *toCall) {
 //	timer device.  Schedule the next interrupt, and invoke the
 //	interrupt handler.
 //----------------------------------------------------------------------
-void Timer::CallBack() {
-    // invoke the Nachos interrupt handler for this device
-    callPeriodically->CallBack();
+void Timer::CallBack()
+{
+	// invoke the Nachos interrupt handler for this device
+	callPeriodically->CallBack();
 
-    SetInterrupt(); // do last, to let software interrupt handler
-                    // decide if it wants to disable future interrupts
+	SetInterrupt(); // do last, to let software interrupt handler
+		// decide if it wants to disable future interrupts
 }
 
 //----------------------------------------------------------------------
@@ -63,14 +65,15 @@ void Timer::CallBack() {
 //	fixed or random.
 //----------------------------------------------------------------------
 
-void Timer::SetInterrupt() {
-    if (!disable) {
-        int delay = TimerTicks;
+void Timer::SetInterrupt()
+{
+	if (!disable) {
+		int delay = TimerTicks;
 
-        if (randomize) {
-            delay = 1 + (RandomNumber() % (TimerTicks * 2));
-        }
-        // schedule the next timer device interrupt
-        kernel->interrupt->Schedule(this, delay, TimerInt);
-    }
+		if (randomize) {
+			delay = 1 + (RandomNumber() % (TimerTicks * 2));
+		}
+		// schedule the next timer device interrupt
+		kernel->interrupt->Schedule(this, delay, TimerInt);
+	}
 }

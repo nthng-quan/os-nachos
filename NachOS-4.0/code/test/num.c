@@ -6,18 +6,19 @@
 
 #include "syscall.h"
 
-int main() {
-    int num;
+int main()
+{
+	int num;
 
-    // Read input from user
-    PrintString("- Insert one number: ");
-    num = ReadNum();
+	// Read input from user
+	PrintString("- Insert one number: ");
+	num = ReadNum();
 
-    // Print out number
-    PrintString("-> ");
-    PrintNum(num);
-    PrintString("\n");
+	// Print out number
+	PrintString("-> ");
+	PrintNum(num);
+	PrintString("\n");
 
-    // Halt system
-    Halt();
+	// Halt system
+	Halt();
 }

@@ -31,15 +31,15 @@
 // Abstract base class for objects that register callbacks
 
 class CallBackObj {
-  public:
-    virtual void CallBack() = 0;
+    public:
+	virtual void CallBack() = 0;
 
-  protected:
-    CallBackObj(){}; // to prevent anyone from creating
-                     // an instance of this class.  Only
-                     // allow creation of instances of
-                     // classes derived from this class.
-    virtual ~CallBackObj(){};
+    protected:
+	CallBackObj(){}; // to prevent anyone from creating
+		// an instance of this class.  Only
+		// allow creation of instances of
+		// classes derived from this class.
+	virtual ~CallBackObj(){};
 };
 
 #endif
