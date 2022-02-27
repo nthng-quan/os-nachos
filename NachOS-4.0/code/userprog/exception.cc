@@ -48,45 +48,60 @@
 //	is in machine.h.
 //----------------------------------------------------------------------
 
-/**
- * @brief Convert user string to system string
- *
- * @param addr addess of user string
- * @param convert_length set max length of string to convert, leave
- * blank to convert all characters of user string
- * @return char*
- */
+void move_pc() {
+    /* set previous programm counter (debugging only)*/
+    kernel->machine->WriteRegister(PrevPCReg,
+                                   kernel->machine->ReadRegister(PCReg));
+
+    /* set programm counter to next instruction (all Instructions are 4 byte *
+     * wide)*/
+    kernel->machine->WriteRegister(PCReg,
+                                   kernel->machine->ReadRegister(NextPCReg));
+
+    /* set next programm counter for brach execution */
+    kernel->machine->WriteRegister(NextPCReg,
+                                   kernel->machine->ReadRegister(PCReg) + 4);
+}
+
 char *stringUser2Kernel(int addr, int convert_length = -1) {
-    // @param addr addess of user string
-
+    // Convert user string to kernel string
+    // addr           : addess of user string
+    // convert_length : desired length of string to convert
+    //                  default will be the length of current string
     int length = 0;
-    bool stop = false;
     char *str;
+    int oneChar;
 
-    do {
-        int oneChar;
-        kernel->machine->ReadMem(addr + length, 1, &oneChar);
-        length++;
-        // if convert_length == -1, we use '\0' to terminate the process
-        // otherwise, we use convert_length to terminate the process
-        stop = ((oneChar == '\0' && convert_length == -1) ||
-                length == convert_length);
-    } while (!stop);
+    if (convert_length == -1) {
+        // if convert_length takes default val as -1, this loop will loop
+        // to the end the string - oneChar = '\0'
+        do {
+            kernel->machine->ReadMem(addr + length, 1, &oneChar);
+            length++;
+        } while (oneChar != '\0');
+    } else {
+        // or it will loop for ${convert_length} times
+        do {
+            kernel->machine->ReadMem(addr + length, 1, &oneChar);
+            length++;
+        } while (length != convert_length);
+    }
 
     str = new char[length];
     for (int i = 0; i < length; i++) {
         int oneChar;
-        kernel->machine->ReadMem(addr + i, 1,
-                                 &oneChar); // copy characters to kernel space
-        str[i] = (unsigned char)oneChar;
+        kernel->machine->ReadMem(addr + i, 1, &oneChar);
+        str[i] = (unsigned char)oneChar; // copy char by char to kernel space
     }
+
     return str;
 }
 
 void StringKernel2User(char *str, int addr, int convert_length = -1) {
-    // @param str : string to convert.
-    // @param addr: address of user string
-    // @param convert_length : desired length of string to convert 
+    // Function to convert Kernel
+    // str            : string to convert.
+    // addr           : address of kernel string
+    // convert_length : desired length of string to convert
     //                  default will be the length of current string
     int length;
     if (convert_length == -1) {
@@ -98,24 +113,38 @@ void StringKernel2User(char *str, int addr, int convert_length = -1) {
 
     for (int i = 0; i < length; i++) {
         kernel->machine->WriteMem(addr + i, 1,
-                                  str[i]); // copy characters to user space
+                                  str[i]); // Copy char by char to user space
     }
-    kernel->machine->WriteMem(addr + length, 1, '\0');
+
+    kernel->machine->WriteMem(addr + length, 1,
+                              '\0'); // Every string ends with '\0'
 }
 
-void move_pc() {
-    /* set previous programm counter (debugging only)*/
-    kernel->machine->WriteRegister(PrevPCReg,
-                                   kernel->machine->ReadRegister(PCReg));
+#define MAX_READ_STRING_LENGTH 255
+void call_SC_ReadString() {
+    int memPtr = kernel->machine->ReadRegister(4); // read address of C-string
+    int length = kernel->machine->ReadRegister(5); // read length of C-string
 
-    /* set programm counter to next instruction (all Instructions are 4 byte
-     * * wide)*/
-    kernel->machine->WriteRegister(PCReg,
-                                   kernel->machine->ReadRegister(NextPCReg));
+    if (length > MAX_READ_STRING_LENGTH) { // avoid allocating large memory
+        DEBUG(dbgSys, "String length exceeds " << MAX_READ_STRING_LENGTH);
+        return move_pc();
+    }
 
-    /* set next programm counter for brach execution */
-    kernel->machine->WriteRegister(NextPCReg,
-                                   kernel->machine->ReadRegister(PCReg) + 4);
+    char *buffer = SysReadString(length); // ReadString and store to buffer
+    StringKernel2User(buffer,
+                      memPtr); // Read string in kernel space -> userspace
+
+    delete[] buffer;
+    return move_pc();
+}
+
+void call_SC_PrintString() {
+    int memPtr = kernel->machine->ReadRegister(4); // read address of C-string
+    char *buffer = stringUser2Kernel(memPtr);
+
+    SysPrintString(buffer, strlen(buffer));
+    delete[] buffer;
+    return move_pc();
 }
 
 void call_SC_Halt() {
@@ -172,36 +201,13 @@ void call_SC_RandomNum() {
     return move_pc();
 }
 
-#define MAX_READ_STRING_LENGTH 255
-void call_SC_ReadString() {
-    int memPtr = kernel->machine->ReadRegister(4); // read address of C-string
-    int length = kernel->machine->ReadRegister(5); // read length of C-string
-
-    if (length > MAX_READ_STRING_LENGTH) { // avoid allocating large memory
-        DEBUG(dbgSys, "String length exceeds " << MAX_READ_STRING_LENGTH);
-        SysHalt();
-    }
-
-    char *buffer = SysReadString(length);
-    StringKernel2User(buffer, memPtr);
-
-    delete[] buffer;
-    return move_pc();
-}
-
-void call_SC_PrintString() {
-    int memPtr = kernel->machine->ReadRegister(4); // read address of C-string
-    char *buffer = stringUser2Kernel(memPtr);
-
-    SysPrintString(buffer, strlen(buffer));
-    delete[] buffer;
-    return move_pc();
-}
-
 void ExceptionHandler(ExceptionType which) {
     int type = kernel->machine->ReadRegister(2);
 
     DEBUG(dbgSys, "Received Exception " << which << " type: " << type << "\n");
+
+    //	"which" is the kind of exception.  The list of possible exceptions
+    //	is in machine.h.
 
     switch (which) {
     case NoException: // switch -> SystemMode [kernel control]
@@ -218,7 +224,6 @@ void ExceptionHandler(ExceptionType which) {
         cerr << "Error " << which << " occurs\n";
         SysHalt();
         ASSERTNOTREACHED();
-
     case SyscallException:
         switch (type) {
         case SC_Halt:

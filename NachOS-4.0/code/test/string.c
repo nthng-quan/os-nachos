@@ -15,6 +15,6 @@ int main() {
     PrintString("-> ");
     PrintString(string);
     PrintChar('\n');
-    
+
     Halt();
 }

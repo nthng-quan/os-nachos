@@ -1,6 +1,6 @@
 /**
  * @file ascii.c
- * @brief Print ascii table 
+ * @brief Print ascii table
  */
 #include "syscall.h"
 
